@@ -19,34 +19,60 @@ import {
   getFromLocalStorage, 
 } from "./localStorageApi.js";
 
-import refs from "./refs.js";
+
+const form = document.querySelector("#task-form");
+const taskNameInput = form.elements.taskName;
+const taskTextInput = form.elements.taskDescription;
+
+const addButton = document.querySelector(".header-form-btn");
 
 
-refs.button.addEventListener("click", onClick);
-document.addEventListener("DOMContentLoaded", renderPage);
 
+taskNameInput.addEventListener("input", onInputNameChange);
+taskTextInput.addEventListener("input", onInputTextChange);
+addButton.addEventListener("click", handleAddTask);
 
-function onClick() {
-  const tema = refs.body.classList.contains("theme-light")
-  ? "theme-dark"
-  : "theme-light";
-  refs.body.classList.remove("theme-light", "theme-dark");
-  refs.body.classList.add(tema);
-
+function onInputNameChange(event) {
+  const textValue = event.target.value;
+  addTolocalStorage("taskName", textValue);
    
-  addTolocalStorage("switcher", tema);
-   
-      
-};
 
-
-function renderPage() {
-  const lsData = getFromLocalStorage("switcher");
-  if (lsData === "theme-dark") {
-    refs.body.classList.replace("theme-light", "theme-dark");
-
-  } else {
-     refs.body.classList.replace("theme-dark", "theme-light");
-  }
 }
-renderPage();
+
+function onInputTextChange(event) {
+  const textValue = event.target.value;
+  addTolocalStorage("taskText", textValue);
+   
+
+}
+
+function handleAddTask(event) {
+  event.preventDefault();
+
+  if (taskTextInput.value === "" || taskNameInput.value === "") {
+    return alert("Введіть назву та текст завдання");
+  }
+
+  const taskName = getFromLocalStorage("taskName");
+  const taskText = getFromLocalStorage("taskText");
+
+  // шукаємо список
+  const items = document.querySelectorAll("#task-list li");
+
+  for (const li of items) {
+    const title = li.querySelector("h3");
+    const desc = li.querySelector("p");
+
+    if (title && title.textContent.trim() === "Заголовок") {
+      title.textContent = taskName;
+      desc.textContent = taskText;
+      break; // знайшли перший — змінюємо і виходимо
+    }
+  }
+
+  // очищаємо
+  localStorage.removeItem("taskText");
+  localStorage.removeItem("taskName");
+  taskNameInput.value = "";
+  taskTextInput.value = "";
+}
